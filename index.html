@@ -18,11 +18,7 @@
       --text-muted: #6B5E52;
     }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background-color: var(--cream-bg);
@@ -52,10 +48,7 @@
     .invite-card::before {
       content: "";
       position: absolute;
-      top: 10px;
-      bottom: 10px;
-      left: 10px;
-      right: 10px;
+      top: 10px; bottom: 10px; left: 10px; right: 10px;
       border: 1px dashed var(--gold-primary);
       border-radius: 14px;
       pointer-events: none;
@@ -114,9 +107,7 @@
       color: var(--text-muted);
     }
 
-    .event-details strong {
-      color: var(--text-dark);
-    }
+    .event-details strong { color: var(--text-dark); }
 
     .form-group {
       margin-bottom: 20px;
@@ -210,9 +201,9 @@
       margin-top: 6px;
     }
 
-    .submit-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 22px rgba(140, 93, 25, 0.35);
+    .submit-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .footer-quote {
@@ -220,6 +211,26 @@
       font-family: 'Great Vibes', cursive;
       font-size: 1.5rem;
       color: var(--gold-primary);
+    }
+
+    #success-box {
+      display: none;
+      padding: 24px 16px;
+      background: #FDFBF7;
+      border: 1.5px solid var(--gold-light);
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+
+    #success-box h3 {
+      font-family: 'Cinzel', serif;
+      color: var(--gold-dark);
+      margin-bottom: 8px;
+    }
+
+    #success-box p {
+      font-size: 0.9rem;
+      color: var(--text-muted);
     }
   </style>
 </head>
@@ -240,11 +251,12 @@
       Avenida Carrera 30 # 1 C - 39 (Barrio Santa Isabel)
     </div>
 
-    <!-- Reemplaza XXXXXXXX con tu ID de Formspree -->
-    <form action="https://formspree.io/f/xbggvnel" method="POST">
-      <input type="hidden" name="_subject" value="Nueva confirmación: 90 años María Araminta">
-
-      
+    <!-- Formulario -->
+    <form id="rsvp-form">
+      <div class="form-group">
+        <label for="invitado">Nombre(s) de quien(es) confirma(n):</label>
+        <input type="text" id="invitado" name="invitados" placeholder="..." required>
+      </div>
 
       <div class="form-group">
         <label>¿Asistirás a la celebración?</label>
@@ -260,13 +272,55 @@
         </div>
       </div>
 
-      <button type="submit" class="submit-btn">Enviar Confirmación</button>
+      <button type="submit" id="btn-submit" class="submit-btn">Enviar Confirmación</button>
     </form>
+
+    <div id="success-box">
+      <h3>¡Respuesta recibida!</h3>
+      <p>Muchas gracias por confirmar. Los detalles quedaron registrados.</p>
+    </div>
 
     <div class="footer-quote">
       Tu presencia es el regalo más hermoso
     </div>
   </div>
+
+  <script>
+    // PEGA AQUÍ LA URL DE TU IMPLEMENTACIÓN DE GOOGLE APPS SCRIPT
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwDmL106uYBKfidIIIfOt5YG3gixOuM-H4uNNP9IM9hgnTQ0_GI7uHUHgOZ8km0E5un/exec";
+
+    const form = document.getElementById('rsvp-form');
+    const submitBtn = document.getElementById('btn-submit');
+    const successBox = document.getElementById('success-box');
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+      submitBtn.disabled = true;
+      submitBtn.innerText = "Registrando...";
+
+      const formData = new FormData(form);
+      const payload = {
+        invitados: formData.get('invitados'),
+        asistencia: formData.get('asistencia')
+      };
+
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+      .then(() => {
+        form.style.display = 'none';
+        successBox.style.display = 'block';
+      })
+      .catch((err) => {
+        alert("Ocurrió un error al enviar. Por favor intenta de nuevo.");
+        submitBtn.disabled = false;
+        submitBtn.innerText = "Enviar Confirmación";
+      });
+    });
+  </script>
 
 </body>
 </html>
